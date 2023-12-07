@@ -1,10 +1,6 @@
 name: notify-developer
 run-name: ${{ github.actor }} pushed to ${{ github.repository }}
-on: 
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: [push]
 jobs:
   send-mail:
     runs-on: ubuntu-latest
