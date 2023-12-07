@@ -10,16 +10,16 @@ class Collection(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=100)
+    title = models.CharField(max_length=100)
     slug = models.SlugField(null=True, blank=True)
-    price = models.DecimalField(max_digits=5, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=5, decimal_places=2)
     description = models.TextField()
     inventory = models.PositiveIntegerField(default=0)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return self.name
+        return self.title
 
 
 class Customer(models.Model):
@@ -37,8 +37,9 @@ class Customer(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=50)
     membership = models.CharField(max_length=1, choices=MEMBERSHIP, default=MEMBERSHIP_BRONZE)
+    birth_date = models.DateField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -63,7 +64,7 @@ class Order(models.Model):
     ]
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
     placed_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=1, choices=ORDER, default=ORDER_PENDING)
+    payment_status = models.CharField(max_length=1, choices=ORDER, default=ORDER_PENDING)
 
 
 class OrderItem(models.Model):
