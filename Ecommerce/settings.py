@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-import os 
+import os
 from dotenv import load_dotenv
 
 
@@ -42,11 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'shop',
     'tags',
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,6 +59,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Ecommerce.urls'
+
+INTERNAL_IPS = [
+
+    "127.0.0.1",
+
+]
 
 TEMPLATES = [
     {
