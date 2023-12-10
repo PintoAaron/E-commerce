@@ -86,7 +86,6 @@ class OrderItem(models.Model):
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=5, decimal_places=2)
 
-
 class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
