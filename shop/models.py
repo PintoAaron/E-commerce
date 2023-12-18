@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -12,8 +13,8 @@ class Collection(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(null=True, blank=True)
-    unit_price = models.DecimalField(max_digits=5, decimal_places=2)
-    description = models.TextField()
+    unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
+    description = models.TextField(null=True, blank=True)
     inventory = models.PositiveIntegerField(default=0)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     last_update = models.DateTimeField(auto_now=True)
@@ -84,7 +85,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveSmallIntegerField()
-    unit_price = models.DecimalField(max_digits=5, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
 
 class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
