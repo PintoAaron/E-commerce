@@ -16,7 +16,7 @@ class Product(models.Model):
     unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
     description = models.TextField(null=True, blank=True)
     inventory = models.PositiveIntegerField(default=0)
-    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='products')
     last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
@@ -71,7 +71,7 @@ class Order(models.Model):
         (ORDER_FAILED, 'Failed'),
         (ORDER_COMPLETED, 'Completed'),
     ]
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='orders')
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=1, choices=ORDER, default=ORDER_PENDING)
     
@@ -83,7 +83,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='orderitems')
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
 
@@ -93,5 +93,5 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cartitems')
     quantity = models.PositiveSmallIntegerField()

@@ -51,7 +51,7 @@ class CustomerAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, customer.orders_count)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(orders_count=Count('order'))
+        return super().get_queryset(request).annotate(orders_count=Count('orders'))
 
 
 
@@ -96,12 +96,12 @@ class CollectionAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, collection.products_count)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(products_count=Count('product'))
+        return super().get_queryset(request).annotate(products_count=Count('products'))
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'order_id', 'product', 'unit_price', 'quantity']
+    list_display = ['id', 'order_id', 'product_name', 'unit_price', 'quantity']
     list_select_related = ['order', 'product']
     list_per_page = 10
     search_fields = ['product']
@@ -109,6 +109,10 @@ class OrderItemAdmin(admin.ModelAdmin):
     def order_id(self, orderitem):
         return orderitem.order.id
 
+    @admin.display(ordering='product')
+    def product_name(self,orderitem):
+        url = (reverse('admin:shop_product_changelist') + '?' + urlencode({'id':str(orderitem.product.id)}))
+        return format_html('<a href="{}">{}</a>',url,orderitem.product)
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
