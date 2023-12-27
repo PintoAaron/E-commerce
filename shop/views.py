@@ -1,17 +1,20 @@
 from django.shortcuts import render
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response 
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet,GenericViewSet
 from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin
 from .models import Product,Collection,OrderItem,Cart,Review
 from .serializers import ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer
+from .filters import ProductFilter
 
 
 class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
-    queryset = Product.objects.select_related('collection').all()
-    
+    queryset = Product.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter    
     
     def destroy(self, request, *args, **kwargs):
         if OrderItem.objects.filter(product_id = kwargs['pk']).exists():
@@ -32,13 +35,11 @@ class CartViewSet(CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,GenericV
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
-    queryset = Review.objects.select_related('product').all()
+    
+    def get_queryset(self):
+        return Review.objects.filter(product_id = self.kwargs['product_pk'])
     
     def get_serializer_context(self):
         return {'product_id':self.kwargs['product_pk']}
-    
-    
-    def get_queryset(self):
-        return super().get_queryset().filter(product_id = self.kwargs['product_pk'])
     
   
