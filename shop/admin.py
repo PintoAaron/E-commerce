@@ -1,8 +1,11 @@
+from typing import Any
 from django.contrib import admin, messages
 from django.db.models import Count
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
-from .models import Customer, Collection, Product, Order, OrderItem, Cart, Address
+from .models import Customer, Collection, Product, Order, OrderItem, Cart, Address, Review
 
 
 @admin.register(Product)
@@ -10,7 +13,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ['title']}
     autocomplete_fields = ['collection']
     actions = ['clear_inventory']
-    list_display = ['id', 'title', 'unit_price', 'product_collection', 'inventory', 'inventory_status']
+    list_display = ['id', 'title', 'unit_price', 'product_collection', 'inventory', 'inventory_status','review_count']
     list_editable = ['inventory']
     list_select_related = ['collection']
     list_per_page = 10
@@ -35,7 +38,15 @@ class ProductAdmin(admin.ModelAdmin):
     def product_collection(self,product):
         url = (reverse('admin:shop_collection_changelist') + '?' + urlencode({'id':str(product.collection.id)}))
         return format_html('<a href="{}">{}</a>',url,product.collection)
-
+    
+    @admin.display(ordering = 'review_count')
+    def review_count(self,product):
+        url = (reverse('admin:shop_review_changelist') + '?' + urlencode({'product__id': str(product.id)}))
+        return format_html('<a href="{}">{}</a>', url, product.review_count)
+    
+      
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(review_count = Count('reviews'))
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
@@ -51,7 +62,7 @@ class CustomerAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, customer.orders_count)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(orders_count=Count('order'))
+        return super().get_queryset(request).annotate(orders_count=Count('orders'))
 
 
 
@@ -96,12 +107,12 @@ class CollectionAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, collection.products_count)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(products_count=Count('product'))
+        return super().get_queryset(request).annotate(products_count=Count('products'))
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'order_id', 'product', 'unit_price', 'quantity']
+    list_display = ['id', 'order_id', 'product_name', 'unit_price', 'quantity']
     list_select_related = ['order', 'product']
     list_per_page = 10
     search_fields = ['product']
@@ -109,6 +120,10 @@ class OrderItemAdmin(admin.ModelAdmin):
     def order_id(self, orderitem):
         return orderitem.order.id
 
+    @admin.display(ordering='product')
+    def product_name(self,orderitem):
+        url = (reverse('admin:shop_product_changelist') + '?' + urlencode({'id':str(orderitem.product.id)}))
+        return format_html('<a href="{}">{}</a>',url,orderitem.product)
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
@@ -127,3 +142,17 @@ class AddressAdmin(admin.ModelAdmin):
     def customer_name(self,address):
         url = (reverse('admin:shop_customer_changelist')+ '?' + urlencode({'address__customer_id':str(address.customer_id)}))
         return format_html('<a href="{}">{}</a>',url,address.customer)
+    
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ['id','author','description','product_name','date']
+    list_select_related = ['product']
+    list_per_page = 10
+    
+    @admin.display(ordering='product')
+    def product_name(self,review):
+        url = (reverse('admin:shop_product_changelist') + '?' + urlencode({'id':str(review.product.id)}))
+        return format_html('<a href="{}">{}</a>',url,review.product)
+    
