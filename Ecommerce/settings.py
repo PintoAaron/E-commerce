@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'shop',
     'tags',
+    'core'
 ]
 
 MIDDLEWARE = [
@@ -148,4 +149,5 @@ REST_FRAMEWORK = {
     
     'COERCE_DECIMAL_TO_STRING': False,
 }
-    
+
+AUTH_USER_MODEL = 'core.User'
