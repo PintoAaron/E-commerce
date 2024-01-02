@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet,GenericViewSet
 from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin
-from .models import Product,Collection,OrderItem,Cart,Review
-from .serializers import ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer
+from .models import Product,Collection,OrderItem,Cart,Review,CartItem
+from .serializers import ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 
@@ -46,4 +46,19 @@ class ReviewViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'product_id':self.kwargs['product_pk']}
     
+
+class CartItemViewSet(ModelViewSet):
+    http_method_names = ['get','post','patch','delete']
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateCartItemSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateCartItemSerializer
+        return CartItemSerializer
+    
+    def get_queryset(self):
+        return CartItem.objects.select_related('product').filter(cart_id=self.kwargs['cart_pk'])
+    
+    def get_serializer_context(self):
+        return {'cart_id':self.kwargs['cart_pk']}
   
