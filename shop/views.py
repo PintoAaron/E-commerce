@@ -4,11 +4,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet,GenericViewSet
-from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin
-from .models import Product,Collection,OrderItem,Cart,Review,CartItem
-from .serializers import ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
+from .models import Product,Collection,OrderItem,Cart,Review,CartItem,Customer
+from .serializers import ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer,CustomerSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
+from .permissions import IsAdminOrReadOnly
 
 
 class ProductViewSet(ModelViewSet):
@@ -19,6 +22,7 @@ class ProductViewSet(ModelViewSet):
     search_fields  = ['title','description']
     ordering_fields = ['unit_price','last_update']
     pagination_class = DefaultPagination
+    permission_classes = [IsAdminOrReadOnly]
     
     def destroy(self, request, *args, **kwargs):
         if OrderItem.objects.filter(product_id = kwargs['pk']).exists():
@@ -29,6 +33,7 @@ class ProductViewSet(ModelViewSet):
 class CollectionViewSet(ModelViewSet):
     serializer_class = CollectionSerializer
     queryset = Collection.objects.annotate(product_count=Count('products')).all()
+    permission_classes = [IsAdminOrReadOnly]
     
     
 
@@ -61,4 +66,26 @@ class CartItemViewSet(ModelViewSet):
     
     def get_serializer_context(self):
         return {'cart_id':self.kwargs['cart_pk']}
-  
+    
+
+class CustomerViewSet(ModelViewSet):
+    serializer_class = CustomerSerializer
+    queryset = Customer.objects.all()
+    permission_classes = [IsAdminUser]
+    
+    
+    @action(detail = False,methods = ['GET','PUT'],permission_classes = [IsAuthenticated])
+    def me(self,request):
+        (customer,created) = Customer.objects.get_or_create(user_id = request.user.id)
+        print(customer)
+        if request.method == 'GET':
+            serializer = CustomerSerializer(customer)
+            return Response(serializer.data)
+        elif request.method == 'PUT':
+            serializer = CustomerSerializer(customer,data = request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        
+    
+    
