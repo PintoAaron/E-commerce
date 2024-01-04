@@ -7,11 +7,11 @@ from rest_framework.viewsets import ModelViewSet,GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
-from .models import Product,Collection,OrderItem,Cart,Review,CartItem,Customer
+from .models import Product,Collection,OrderItem,Cart,Review,CartItem,Customer,Order
 from .serializers import ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer,CustomerSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly,CanViewCustomerHistory
 
 
 class ProductViewSet(ModelViewSet):
@@ -86,6 +86,12 @@ class CustomerViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+        
+    
+    @action(detail=True,methods = ['GET','DELETE'],permission_classes = [CanViewCustomerHistory])
+    def history(self,request,pk):
+        return Response(pk)
+    
         
     
     
