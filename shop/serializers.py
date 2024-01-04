@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-from .models import Product,Collection,Cart,CartItem,Review,Customer
+from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -99,3 +99,29 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ['membership','birth_date','phone','user_id','date_joined']
+        
+    
+        
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = SimpleProductSerializer()
+    class Meta:
+        model = OrderItem
+        fields = ['id','quantity','unit_price','product']
+    
+    
+
+class CreateOrderSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+    
+    def save(self, **kwargs):
+        user_id = self.context['user_id']
+        
+        customer = Customer.objects.get(user_id = user_id)
+        Order.objects.create(customer_id = customer.id)
+    
+
+class OrderSerializer(serializers.ModelSerializer):
+    orderitems = OrderItemSerializer(many=True)
+    class Meta:
+        model = Order
+        fields = ['id','customer','payment_status','orderitems']
