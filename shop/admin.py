@@ -88,7 +88,7 @@ class OrderAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, order.order_items_count)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(order_items_count=Count('orderitem'))
+        return super().get_queryset(request).annotate(order_items_count=Count('orderitems'))
 
     @admin.action(description='Mark as Complete')
     def mark_success(self, request, queryset):
