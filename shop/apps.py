@@ -7,4 +7,4 @@ class ShopConfig(AppConfig):
     
     
     def ready(self) -> None:
-        import shop.signals
+        import shop.signals.handlers
