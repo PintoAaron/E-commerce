@@ -1,0 +1,11 @@
+from django.apps import AppConfig
+
+
+class MailConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'mail'
+    
+    
+    
+    def ready(self) -> None:
+        import mail.signals.handlers

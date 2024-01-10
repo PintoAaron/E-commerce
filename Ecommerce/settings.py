@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'shop',
     'tags',
-    'core'
+    'core',
+    'mail'
 ]
 
 MIDDLEWARE = [
