@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db import transaction
-from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem
+from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem,ProductImage
 from .signals import order_created_signal
 
 
@@ -160,3 +160,13 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['payment_status']
+
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return ProductImage.objects.create(product_id = product_id,**validated_data)
+    class Meta:
+        model = ProductImage
+        fields = ['id','image']
