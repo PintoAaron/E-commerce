@@ -1,41 +1,23 @@
-from django.core.mail import EmailMessage,BadHeaderError
 from django.db.models.signals import post_save
 from django.conf import settings
 from django.dispatch import receiver
 from shop.signals import order_created_signal
-from templated_mail.mail import BaseEmailMessage
-from shop.models import Customer
+from ..tasks import order_created_task,new_user_task
 
 
 @receiver(order_created_signal)
 def send_order_received_mail(sender,**kwargs):
     if kwargs['order']:
         order = kwargs['order']
-        customer = Customer.objects.select_related('user').get(pk = order.customer_id)
-        try:
-            message = EmailMessage(
-                'Order Received',
-                f'Hello {customer.user.first_name}, we have successfully received your order and it is undergoing processing.',
-                'aaronpinto111@gmail.com',
-                [customer.user.email]
-            )
-            message.attach_file('media/Pintoshop.png')
-            message.send()
-        except BadHeaderError:
-            pass
+        order_created_task.delay(order)
+        
         
 
 @receiver(post_save,sender=settings.AUTH_USER_MODEL)    
 def send_welcome_message_to_new_user(sender,**kwargs):
     if kwargs['created']:
-        to_email = kwargs['instance']
-        try:
-            message = BaseEmailMessage(
-                template_name='emails/welcome.html'
-            )
-            message.send([to_email])
-        except BadHeaderError:
-            pass
+        new_user = kwargs['instance']
+        new_user_task.delay(new_user)
     
 
   
