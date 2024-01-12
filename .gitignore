@@ -1,2 +1,4 @@
 .env
 __pycache__
+media/shop
+db.sqlite3

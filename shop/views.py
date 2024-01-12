@@ -7,8 +7,8 @@ from rest_framework.viewsets import ModelViewSet,GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
-from .models import Product,Collection,OrderItem,Cart,Review,CartItem,Customer,Order
-from .serializers import UpdateOrderSerializer,ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer,CreateOrderSerializer
+from .models import Product,Collection,OrderItem,Cart,Review,CartItem,Customer,Order,ProductImage
+from .serializers import ProductImageSerializer,UpdateOrderSerializer,ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer,CreateOrderSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from .permissions import IsAdminOrReadOnly,CanViewCustomerHistory
@@ -16,7 +16,7 @@ from .permissions import IsAdminOrReadOnly,CanViewCustomerHistory
 
 class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related('images').all()
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
     filterset_class = ProductFilter    
     search_fields  = ['title','description']
@@ -123,5 +123,16 @@ class OrderViewSet(ModelViewSet):
         order = serializer.save()
         serializer = OrderSerializer(order)
         return Response(serializer.data)
+
+
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    
+    def get_serializer_context(self):
+        return {'product_id':self.kwargs['product_pk']}
+    
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id = self.kwargs['product_pk'])
     
     
