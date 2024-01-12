@@ -1,8 +1,9 @@
 from django.core.mail import EmailMessage,BadHeaderError
 from django.db.models.signals import post_save
 from django.conf import settings
-from shop.signals import order_created_signal
 from django.dispatch import receiver
+from shop.signals import order_created_signal
+from templated_mail.mail import BaseEmailMessage
 from shop.models import Customer
 
 
@@ -29,18 +30,10 @@ def send_welcome_message_to_new_user(sender,**kwargs):
     if kwargs['created']:
         to_email = kwargs['instance']
         try:
-            message = EmailMessage(
-                'Welcome To PintoShop',
-                '''
-                Hi, 
-                You have successfullly created an account with PintoShop
-                Go ahead and start shopping
-                ''',
-                'aaronpinto111@gmail.com',
-                [to_email]
-                
+            message = BaseEmailMessage(
+                template_name='emails/welcome.html'
             )
-            message.send()
+            message.send([to_email])
         except BadHeaderError:
             pass
     
