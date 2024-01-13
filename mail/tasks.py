@@ -1,13 +1,11 @@
 from django.core.mail import EmailMessage,BadHeaderError
-from templated_mail.mail import BaseEmailMessage
 from shop.models import Customer
 from celery import shared_task
 
 
 @shared_task
-def order_created_task(order):
-    customer = Customer.objects.select_related('user').get(pk = order.customer_id)
-    print("SENDING MAIL TO CUSTOMER ABOUT ORDER")
+def order_created_task(customer_id):
+    customer = Customer.objects.select_related('user').get(pk = customer_id)
     try:
         message = EmailMessage(
             'Order Received',
@@ -17,21 +15,19 @@ def order_created_task(order):
         )
         message.attach_file('media/Pintoshop.png')
         message.send()
-        print("MAIL ABOUT ORDER SUCCESSFULLY SENT")
     except BadHeaderError:
-        print("MAIL ABOUT ORDER NOT SENT")
         pass
 
 
 @shared_task
-def new_user_task(user):
-    print("SENDING MAIL TO NEW USER")
+def new_user_task(user_email,username):
     try:
-        message = BaseEmailMessage(
-            template_name='emails/welcome.html'
-            )
-        message.send([user])
-        print("MAIL SUCCESSFULLY SENT")
+        message = EmailMessage(
+            'PintoShop Account',
+            f'Hello {username}, you have successfully created an account with pintoshop, go ahead ad start shopping',
+            'aaronpinto111@gmail.com',
+            [user_email]
+        )
+        message.send()
     except BadHeaderError:
         pass
-    print("MAIL NOT SENT")

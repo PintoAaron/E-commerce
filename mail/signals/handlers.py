@@ -9,7 +9,8 @@ from ..tasks import order_created_task,new_user_task
 def send_order_received_mail(sender,**kwargs):
     if kwargs['order']:
         order = kwargs['order']
-        order_created_task.delay(order)
+        customer = order.customer_id
+        order_created_task.delay(customer)
         
         
 
@@ -17,7 +18,7 @@ def send_order_received_mail(sender,**kwargs):
 def send_welcome_message_to_new_user(sender,**kwargs):
     if kwargs['created']:
         new_user = kwargs['instance']
-        new_user_task.delay(new_user)
+        new_user_task.delay(new_user.email,new_user.first_name)
     
 
   
