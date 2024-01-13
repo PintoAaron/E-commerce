@@ -77,7 +77,6 @@ class CustomerViewSet(ModelViewSet):
     @action(detail = False,methods = ['GET','PUT'],permission_classes = [IsAuthenticated])
     def me(self,request):
         (customer,created) = Customer.objects.get_or_create(user_id = request.user.id)
-        print(customer)
         if request.method == 'GET':
             serializer = CustomerSerializer(customer)
             return Response(serializer.data)

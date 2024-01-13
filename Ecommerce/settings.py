@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from dotenv import load_dotenv
-import os
 from datetime import timedelta
+from celery.schedules import crontab
 
 
 load_dotenv()
@@ -189,3 +190,10 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
 CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BEAT_SCHEDULE = {
+    'mail_clients_every_friday':{
+        'task': 'mail.tasks.mail_clients_every_friday',
+        'schedule': crontab(day_of_week=5,hour=8,minute=00)
+    }
+    
+}

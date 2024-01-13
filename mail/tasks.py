@@ -1,6 +1,7 @@
 from django.core.mail import EmailMessage,BadHeaderError
 from shop.models import Customer
 from celery import shared_task
+from core.models import User
 
 
 @shared_task
@@ -31,3 +32,21 @@ def new_user_task(user_email,username):
         message.send()
     except BadHeaderError:
         pass
+    
+
+@shared_task
+def mail_clients_every_friday():
+    user_info = User.objects.values_list('first_name','email')
+    for first_name, email in user_info:
+        try:
+            message = EmailMessage(
+                'PintoShop Friday Bonanza!',
+                f"Hi {first_name}, It's another freaky free friday, PintoShop gives you 20% discount on anything you shop........ ",
+                'aaronpinto111@gmail.com',
+                [email]
+            )
+            message.attach_file('media/Pintoshop.png')
+            message.send()
+        except BadHeaderError:
+            pass
+    
