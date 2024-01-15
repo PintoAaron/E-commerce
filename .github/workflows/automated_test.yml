@@ -33,7 +33,8 @@ jobs:
       run: |
         pytest --cov=./ --cov-report=xml > coverage.txt
     - name: Display Coverage Report
-      run: cat coverage.txt
+      run: |
+        coverage report -m
     - name: Check Coverage Threshold
       run: |
         threshold=50  
@@ -42,6 +43,10 @@ jobs:
           echo "Coverage is below the threshold of $threshold%. Failing the build."
           exit 1
         fi
+    - name: Read Coverage Report
+      id: coverage
+      run: |
+          echo "::set-output name=report::$(cat coverage.txt)"
 
     - name: Send Coverage Report via Email
       uses: dawidd6/action-send-mail@v3
@@ -54,8 +59,8 @@ jobs:
         body: |
           Here is the test coverage report for the ${{ github.repository }} repository:
           
-            ```
-            $(cat coverage.txt)
-            ```
+          ```
+          ${{ steps.coverage.outputs.report }}
+          ```
         to: ${{ secrets.MAIL_USERNAME }}
         from: ${{ secrets.MAIL_USERNAME }}
