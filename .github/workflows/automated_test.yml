@@ -32,6 +32,8 @@ jobs:
     - name: Run Tests with Coverage
       run: |
         pytest --cov=./ --cov-report=xml > coverage.txt
+    - name: Display Coverage Report
+      run: cat coverage.txt
     - name: Check Coverage Threshold
       run: |
         threshold=50  
@@ -52,6 +54,8 @@ jobs:
         body: |
           Here is the test coverage report for the ${{ github.repository }} repository:
           
-          $(cat coverage.txt)
+            ```
+            $(cat coverage.txt)
+            ```
         to: ${{ secrets.MAIL_USERNAME }}
         from: ${{ secrets.MAIL_USERNAME }}
