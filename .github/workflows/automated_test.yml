@@ -28,12 +28,10 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install -r requirements.txt
-        pip install coverage
+        pip install pytest-cov
     - name: Run Tests with Coverage
       run: |
-        coverage run manage.py test
-        coverage report -m > coverage.txt
-
+        pytest --cov=./ --cov-report=xml > coverage.txt
     - name: Check Coverage Threshold
       run: |
         threshold=50  
