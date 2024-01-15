@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -29,6 +28,32 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install -r requirements.txt
-    - name: Run Tests
+        pip install coverage
+    - name: Run Tests with Coverage
       run: |
-        pytest
+        coverage run manage.py test
+        coverage report -m > coverage.txt
+
+    - name: Check Coverage Threshold
+      run: |
+        threshold=50  
+        actual_coverage=$(coverage report -m --fail-under=0 | grep TOTAL | awk '{print $4}')
+        if [ "$actual_coverage" -lt "$threshold" ]; then
+          echo "Coverage is below the threshold of $threshold%. Failing the build."
+          exit 1
+        fi
+
+    - name: Send Coverage Report via Email
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Test Coverage Report for ${{ github.repository }}
+        body: |
+          Here is the test coverage report for the ${{ github.repository }} repository:
+          
+          $(cat coverage.txt)
+        to: ${{ secrets.MAIL_USERNAME }}
+        from: ${{ secrets.MAIL_USERNAME }}
