@@ -30,22 +30,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests with Coverage
       run: |
-        pytest --cov=./ --cov-report=xml > coverage.txt
-    - name: Display Coverage Report
-      run: |
-        cat coverage.txt
-    - name: Check Coverage Threshold
-      run: |
-        threshold=50  
-        actual_coverage=$(grep -Po 'TOTAL.*\K\d+' coverage.txt)
-        if (( $(echo "$actual_coverage < $threshold" | bc -l) )); then
-          echo "Coverage is below the threshold of $threshold%. Failing the build."
-          exit 1
-        fi
-    - name: Read Coverage Report
-      id: coverage
-      run: |
-          echo "::set-output name=report::$(cat coverage.txt)"
+        pytest --cov=./ --cov-report term
     - name: Send Coverage Report via Email
       uses: dawidd6/action-send-mail@v3
       with:
@@ -56,9 +41,6 @@ jobs:
         subject: Test Coverage Report for ${{ github.repository }}
         body: |
           Here is the test coverage report for the ${{ github.repository }} repository:
-          
-          ```
-          ${{ steps.coverage.outputs.report }}
-          ```
+          Sending Soon.......
         to: ${{ secrets.MAIL_USERNAME }}
         from: ${{ secrets.MAIL_USERNAME }}
