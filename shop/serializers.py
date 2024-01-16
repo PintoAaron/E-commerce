@@ -9,7 +9,12 @@ class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = ['id','title','product_count']
-        
+
+
+class UpdateCollectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = ['title']
 
 class ProductImageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):

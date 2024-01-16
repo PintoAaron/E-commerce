@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.mixins import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
 from .models import Product,Collection,OrderItem,Cart,Review,CartItem,Customer,Order,ProductImage
-from .serializers import ProductImageSerializer,UpdateOrderSerializer,ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer,CreateOrderSerializer
+from .serializers import UpdateCollectionSerializer,ProductImageSerializer,UpdateOrderSerializer,ProductSerializer,CollectionSerializer,CartSerializer,ReviewSerializer,CartItemSerializer,CreateCartItemSerializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer,CreateOrderSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from .permissions import IsAdminOrReadOnly,CanViewCustomerHistory
@@ -31,11 +31,17 @@ class ProductViewSet(ModelViewSet):
     
 
 class CollectionViewSet(ModelViewSet):
+    http_method_names = ['get','post','patch','head','options']
     serializer_class = CollectionSerializer
     queryset = Collection.objects.annotate(product_count=Count('products')).all()
     permission_classes = [IsAdminOrReadOnly]
     
     
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH':
+            return UpdateCollectionSerializer
+        return CollectionSerializer
+        
 
 class CartViewSet(CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,GenericViewSet):
     serializer_class = CartSerializer
@@ -76,7 +82,7 @@ class CustomerViewSet(ModelViewSet):
     
     @action(detail = False,methods = ['GET','PUT'],permission_classes = [IsAuthenticated])
     def me(self,request):
-        (customer,created) = Customer.objects.get_or_create(user_id = request.user.id)
+        customer= Customer.objects.get(user_id = request.user.id)
         if request.method == 'GET':
             serializer = CustomerSerializer(customer)
             return Response(serializer.data)
