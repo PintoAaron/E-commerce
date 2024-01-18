@@ -25,6 +25,7 @@ flower = "*"
 pytest = "*"
 pytest-django = "*"
 pytest-cov = "*"
+model-bakery = "*"
 
 [requires]
 python_version = "3.9"
