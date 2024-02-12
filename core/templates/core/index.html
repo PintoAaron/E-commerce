@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PintoShop</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+      }
+
+      nav ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #333;
+      }
+
+      nav li {
+        float: left;
+      }
+
+      nav li a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+      }
+
+      nav li a:hover {
+        background-color: #111;
+      }
+
+      .banner {
+        background-image: url("https://images.unsplash.com/photo-1605447813584-26aeb3f8e6ae?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+        height: 500px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .banner h1 {
+        font-size: 40px;
+        color: #fff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .featured-products {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 20px 0;
+      }
+
+      .featured-product {
+        width: 300px;
+        margin: 5px;
+        padding: 10px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      .featured-product:hover {
+        transform: scale(1.05);
+      }
+
+      .featured-product img {
+        width: 100%;
+        height: auto;
+      }
+      .featured-product h2 {
+        font-size: 24px;
+        color: #333;
+        text-align: center;
+      }
+
+      .featured-product p {
+        font-size: 16px;
+        color: #666;
+        text-align: justify;
+      }
+
+      .footer {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li><a href="/shop">PINTOSHOP</a></li>
+        <li><a href="/shop/products">Store</a></li>
+        <li><a href="/auth/users">Register</a></li>
+        <li><a href="/auth/jwt/create">Login</a></li>
+      </ul>
+    </nav>
+    <div class="banner">
+      <h1>Shop the Latest Trends</h1>
+    </div>
+    <div class="container">
+      <div class="featured-products">
+        <div class="featured-product">
+          <img
+            src="https://images.unsplash.com/photo-1603252109303-2751441dd157?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDF8fHxlbnwwfHx8fHw%3D"
+            alt="Product 1"
+          />
+          <h2>Shirt</h2>
+          <p>grab all your all clothings from us</p>
+        </div>
+        <div class="featured-product">
+          <img
+            src="https://images.unsplash.com/photo-1571601035754-5c927f2d7edc?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Product 2"
+          />
+          <h2>Jordan</h2>
+          <p>All types sneakers is available</p>
+        </div>
+        <div class="featured-product">
+          <img
+            src="https://images.unsplash.com/photo-1541807084-5c52b6b3adef?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Product 3"
+          />
+          <h2>Laptops</h2>
+          <p>your number one plug for all your laptop and laptop accessories</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; 2021 PintoShop. All rights reserved.</p>
+    </div>
+  </body>
+</html>
