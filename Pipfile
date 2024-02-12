@@ -20,6 +20,10 @@ redis = "*"
 celery = "*"
 gevent = "*"
 flower = "*"
+gunicorn = "*"
+dj-database-url = "*"
+whitenoise = "*"
+psycopg2 = "*"
 
 [dev-packages]
 pytest = "*"
