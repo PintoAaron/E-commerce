@@ -8,4 +8,3 @@ celerybeat-schedule.dir
 .coverage
 .pytest_cache
 .vscode
-static
