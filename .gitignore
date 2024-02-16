@@ -8,3 +8,6 @@ celerybeat-schedule.dir
 .coverage
 .pytest_cache
 .vscode
+docker*
+wait-for-it.sh
+```
