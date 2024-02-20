@@ -25,6 +25,7 @@ dj-database-url = "*"
 whitenoise = "*"
 psycopg2 = "*"
 psycopg2-binary = "*"
+kafka-python = "*"
 
 [dev-packages]
 pytest = "*"

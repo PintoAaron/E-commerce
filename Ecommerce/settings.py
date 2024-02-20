@@ -28,13 +28,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-lid9aj2%-n^6^d5o@3%^60rw5_lv0tu_q(w-d$47t4ugyehe8l'
+SECRET_KEY = 'django-insecure-lid9aj2%-n^6^d5o@3%^60rw5_lv0tu_q(w-d$47t4ugyehe8l'
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["pintoshop.onrender.com"]
+#ALLOWED_HOSTS = ["pintoshop.onrender.com"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -103,20 +104,21 @@ WSGI_APPLICATION = 'Ecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('DB_NAME'),
-#         'HOST': os.getenv('DB_HOST'),
-#         'USER': os.getenv('DB_USER'),
-#         'PASSWORD': os.getenv('DB_PASSWORD'),
-#     }
-# }
-
-
 DATABASES = {
-    'default': dj_database_url.config()
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'pintoshop',
+        'HOST': '192.168.124.193',
+        'USER': 'root',
+        'PASSWORD': 'admin123',
+        'PORT': '7777',
+    }
 }
+
+
+# DATABASES = {
+#     'default': dj_database_url.config()
+# }
 
 
 # Password validation
@@ -198,11 +200,12 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
 
-CELERY_BROKER_URL = os.getenv('BROKER_URL')
+#CELERY_BROKER_URL = os.getenv('BROKER_URL')
+CELERY_BROKER_URL = 'redis://192.168.124.193:6379/1'
 CELERY_BEAT_SCHEDULE = {
     'mail_clients_every_friday':{
         'task': 'mail.tasks.mail_clients_every_friday',
-        'schedule': crontab(day_of_week=5,hour=8,minute=00)
+        'schedule': crontab(day_of_week=5,hour=11,minute=00)
     }
     
 }

@@ -25,7 +25,7 @@ def new_user_task(user_email,username):
     try:
         message = EmailMessage(
             'PintoShop Account',
-            f'Hello {username}, you have successfully created an account with pintoshop, go ahead ad start shopping',
+            f'Hello {username}, thank you joining pintoshop, click here: https://pintoshop.onrender.com ',
             'aaronpinto111@gmail.com',
             [user_email]
         )

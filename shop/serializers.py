@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem,ProductImage
 from .signals import order_created_signal
+from shop.data_stream_producer import send_order_to_kafka
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -155,6 +156,8 @@ class CreateOrderSerializer(serializers.Serializer):
             Cart.objects.filter(id = cart_id).delete()
             
             order_created_signal.send_robust(self.__class__,order = order)
+            
+            send_order_to_kafka(customer_id = customer.id)
             
             return order
         
