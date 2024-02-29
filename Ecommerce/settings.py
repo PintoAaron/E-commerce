@@ -104,21 +104,21 @@ WSGI_APPLICATION = 'Ecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'pintoshop',
-        'HOST': '192.168.124.193',
-        'USER': 'root',
-        'PASSWORD': 'admin123',
-        'PORT': '7777',
-    }
-}
-
-
 # DATABASES = {
-#     'default': dj_database_url.config()
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'pintoshop',
+#         'HOST': '192.168.124.193',
+#         'USER': 'root',
+#         'PASSWORD': 'admin123',
+#         'PORT': '7777',
+#     }
 # }
+
+
+DATABASES = {
+    'default': dj_database_url.config()
+}
 
 
 # Password validation
