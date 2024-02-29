@@ -28,14 +28,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-lid9aj2%-n^6^d5o@3%^60rw5_lv0tu_q(w-d$47t4ugyehe8l'
+#SECRET_KEY = 'django-insecure-lid9aj2%-n^6^d5o@3%^60rw5_lv0tu_q(w-d$47t4ugyehe8l'
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-#ALLOWED_HOSTS = ["pintoshop.onrender.com"]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["pintoshop.onrender.com"]
+#ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -200,8 +200,8 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
 
-#CELERY_BROKER_URL = os.getenv('BROKER_URL')
-CELERY_BROKER_URL = 'redis://192.168.124.193:6379/1'
+#CELERY_BROKER_URL = 'redis://192.168.124.193:6379/1'
+CELERY_BROKER_URL = os.getenv('BROKER_URL')
 CELERY_BEAT_SCHEDULE = {
     'mail_clients_every_friday':{
         'task': 'mail.tasks.mail_clients_every_friday',
