@@ -7,6 +7,9 @@ from .validators import validate_file_size
 class Collection(models.Model):
     title = models.CharField(max_length=100, null=False)
     featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+')
+    icon = models.CharField(max_length=50, null=True, blank=True)
+    color = models.CharField(max_length=20, null=True, blank=True)
+    background_color = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.title
@@ -31,7 +34,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product,on_delete = models.CASCADE,related_name = 'images')
-    image = models.ImageField(upload_to='shop/images',validators=[validate_file_size])
+    image_url = models.CharField(max_length=255, null=True, blank=True)
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
@@ -101,7 +104,6 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
 
 class Cart(models.Model):
-    id = models.UUIDField(primary_key=True,default = uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem,ProductImage
 from .signals import order_created_signal
+from .uploader import upload_image
 from shop.data_stream_producer import send_order_to_kafka
 
 
@@ -9,13 +10,13 @@ class CollectionSerializer(serializers.ModelSerializer):
     product_count = serializers.IntegerField(read_only = True)
     class Meta:
         model = Collection
-        fields = ['id','title','product_count']
+        fields = ['id','title','product_count','icon','color','background_color']
 
 
 class UpdateCollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = ['title']
+        fields = ['title','icon','color','background_color']
 
 class ProductImageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
@@ -23,13 +24,36 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return ProductImage.objects.create(product_id = product_id,**validated_data)
     class Meta:
         model = ProductImage
-        fields = ['id','image']
-        
+        fields = ['id','image_url']
+
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True,read_only=True)
+    collection = CollectionSerializer(read_only=True)
     class Meta:
         model = Product
-        fields = ['id','title','inventory','unit_price','collection','images']
+        fields = ['id','title','inventory','unit_price','collection','images', 'last_update', 'slug', 'description']
+        
+
+class CreateProductSerializer(serializers.ModelSerializer):
+    image_uploads = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        allow_empty=True
+    )    
+   
+    def create(self, validated_data):
+        image_uploads = validated_data.pop('image_uploads', [])
+        product = Product.objects.create(**validated_data)
+        image_urls = upload_image(image_uploads)
+        ProductImage.objects.bulk_create(
+            ProductImage(product=product, image_url=image_url) for image_url in image_urls
+        )
+        print(f"Product created with images: {image_urls}")
+        return product
+    class Meta:
+        model = Product
+        fields = ['id','title','inventory','unit_price','collection','description','image_uploads']
 
 
 class SimpleProductSerializer(serializers.ModelSerializer):

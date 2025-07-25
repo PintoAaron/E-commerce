@@ -32,9 +32,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["pintoshop.onrender.com"]
+ALLOWED_HOSTS = ["*"]  # Allow all hosts for development purposes
 #ALLOWED_HOSTS = []
 
 
@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'django_filters',
-    #'debug_toolbar',
+    'debug_toolbar',
     'shop',
     'tags',
     'core',
@@ -60,7 +60,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    #"debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -79,7 +79,8 @@ INTERNAL_IPS = [
 
 ]
 
-CORS_ALLOWED_ORIGINS = []
+#allow all origins
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -104,21 +105,21 @@ WSGI_APPLICATION = 'Ecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'pintoshop',
-#         'HOST': '192.168.124.193',
-#         'USER': 'root',
-#         'PASSWORD': 'admin123',
-#         'PORT': '7777',
-#     }
-# }
-
-
 DATABASES = {
-    'default': dj_database_url.config()
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'pintoshop',
+        'HOST': 'localhost',
+        'USER': 'developer',
+        'PASSWORD': 'password',
+        'PORT': '5432',
+    }
 }
+
+
+# DATABASES = {
+#     'default': dj_database_url.config()
+# }
 
 
 # Password validation
@@ -186,6 +187,7 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
+        'user': 'core.serializers.UserSerializer',
         'current_user': 'core.serializers.UserSerializer',
     },
 }
