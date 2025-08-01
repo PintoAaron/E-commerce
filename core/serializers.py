@@ -17,7 +17,8 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             username=username,
             email=email,
             password=password,
-            phone=phone
+            phone=phone,
+            is_staff=True
         )
         self.instance.save()
         return self.instance
@@ -25,4 +26,4 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 
 class UserSerializer(BaseUserSerializer):
     class Meta(BaseUserSerializer.Meta):
-        fields = ['id', 'username', 'phone','email']
+        fields = ['id', 'username', 'phone','email', 'date_joined']

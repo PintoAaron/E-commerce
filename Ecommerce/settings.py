@@ -105,13 +105,24 @@ WSGI_APPLICATION = 'Ecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'pintoshop',
+#         'HOST': 'localhost',
+#         'USER': 'developer',
+#         'PASSWORD': 'password',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pintoshop',
-        'HOST': 'localhost',
-        'USER': 'developer',
-        'PASSWORD': 'password',
+        'NAME': os.getenv('DB_NAME'),
+        'HOST': os.getenv('DB_HOST'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'PORT': '5432',
     }
 }

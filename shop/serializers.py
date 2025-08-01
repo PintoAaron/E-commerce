@@ -4,6 +4,7 @@ from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,Order
 from .signals import order_created_signal
 from .uploader import upload_image
 from shop.data_stream_producer import send_order_to_kafka
+from core.serializers import UserSerializer
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -29,10 +30,11 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True,read_only=True)
     collection = CollectionSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Product
-        fields = ['id','title','inventory','unit_price','collection','images', 'last_update', 'slug', 'description']
-        
+        fields = ['id','title','inventory','unit_price','collection','images', 'last_update', 'slug', 'description','user']
+
 
 class CreateProductSerializer(serializers.ModelSerializer):
     image_uploads = serializers.ListField(
@@ -40,16 +42,18 @@ class CreateProductSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         allow_empty=True
-    )    
-   
+    )
+
     def create(self, validated_data):
         image_uploads = validated_data.pop('image_uploads', [])
-        product = Product.objects.create(**validated_data)
+        
+        user_id = self.context.get('user_id')
+        
+        product = Product.objects.create(**validated_data, user_id=user_id)
         image_urls = upload_image(image_uploads)
         ProductImage.objects.bulk_create(
             ProductImage(product=product, image_url=image_url) for image_url in image_urls
         )
-        print(f"Product created with images: {image_urls}")
         return product
     class Meta:
         model = Product
@@ -135,12 +139,12 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         
     
 class CustomerSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(read_only=True)
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Customer
-        fields = ['membership','birth_date','phone','user_id','date_joined']
-        
-    
+        fields = ['membership','birth_date','phone','user','date_joined']
+
+
         
 class OrderItemSerializer(serializers.ModelSerializer):
     product = SimpleProductSerializer()

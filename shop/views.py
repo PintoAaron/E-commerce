@@ -35,8 +35,18 @@ class ProductViewSet(ModelViewSet):
         if OrderItem.objects.filter(product_id=kwargs['pk']).exists():
             return Response({'error': 'Product cannot be deleted because it is associated with an order item'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().destroy(request, *args, **kwargs)
-
-
+    
+    
+    def get_serializer_context(self):
+        return {'user_id': self.request.user.id}
+    
+    
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        products = self.queryset.filter(user_id=request.user.id)
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data)
+       
 class CollectionViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
     serializer_class = CollectionSerializer

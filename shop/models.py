@@ -2,8 +2,9 @@ from django.core.validators import MinValueValidator
 from django.contrib import admin
 from django.conf import settings
 from django.db import models
-from uuid import uuid4
-from .validators import validate_file_size
+# from uuid import uuid4
+
+
 class Collection(models.Model):
     title = models.CharField(max_length=100, null=False)
     featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+')
@@ -16,6 +17,7 @@ class Collection(models.Model):
 
 
 class Product(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='products', null=True)
     title = models.CharField(max_length=100)
     slug = models.SlugField(null=True, blank=True)
     unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
