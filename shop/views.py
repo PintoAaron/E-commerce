@@ -112,7 +112,17 @@ class CustomerViewSet(ModelViewSet):
     @action(detail=True, methods=['GET', 'DELETE'], permission_classes=[CanViewCustomerHistory])
     def history(self, request, pk):
         return Response(pk)
-
+    
+    
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def cart(self, request, pk):
+        # check if user has a cart and return else create one and return
+        customer = Customer.objects.get(user_id=request.user.id)
+        cart, created = Cart.objects.get_or_create(customer_id=customer.id)
+        if created:
+            print(f"CART CREATED- {cart.id}")
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
 
 class OrderViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']

@@ -61,10 +61,11 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
 
 class SimpleProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True,read_only=True)
     class Meta:
         model = Product
-        fields = ['id','title','unit_price']        
-    
+        fields = ['id','title','unit_price','images']
+
 
 class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -142,7 +143,7 @@ class CustomerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = Customer
-        fields = ['membership','birth_date','phone','user','date_joined']
+        fields = ['id','membership','birth_date','phone','user','date_joined']
 
 
         

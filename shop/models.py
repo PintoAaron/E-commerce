@@ -106,8 +106,8 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=5, decimal_places=2,validators=[MinValueValidator(1)])
 
 class Cart(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='carts')
     created_at = models.DateTimeField(auto_now_add=True)
-
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE,related_name='items')
