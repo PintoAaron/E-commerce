@@ -1,10 +1,15 @@
+from random import randint
+
 from rest_framework import serializers
 from django.db import transaction
-from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem,ProductImage
+from .models import Product,Collection,Cart,CartItem,Review,Customer,Order,OrderItem,ProductImage, MobilePaymentWallet, Address, FavoriteProduct
 from .signals import order_created_signal
 from .uploader import upload_image
 from shop.data_stream_producer import send_order_to_kafka
 from core.serializers import UserSerializer
+from .utils.phone_number import format_phone_number
+from .utils.redis import otp_manager
+from .utils.sms import send_otp_sms
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -33,7 +38,13 @@ class ProductSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = Product
-        fields = ['id','title','inventory','unit_price','collection','images', 'last_update', 'slug', 'description','user']
+        fields = ['id','title','inventory','unit_price','collection','images', 'last_update', 'slug', 'description','user', 'is_active']
+        
+
+class UpdateProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['title', 'inventory', 'unit_price', 'collection', 'description', 'is_active']
 
 
 class CreateProductSerializer(serializers.ModelSerializer):
@@ -207,3 +218,66 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
         fields = ['payment_status']
 
 
+
+class MobilePaymentWalletSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    service_provider = serializers.ChoiceField(choices=MobilePaymentWallet.SERVICE_PROVIDERS)
+    verified = serializers.BooleanField(read_only=True)
+    class Meta:
+        model = MobilePaymentWallet
+        fields = ['id', 'title', 'service_provider', 'phone_number', 'verified']
+        
+    
+    def validate_phone_number(self, phone_number):
+        customer_id = self.context.get('customer_id')
+        if MobilePaymentWallet.objects.filter(phone_number=phone_number, customer_id=customer_id).exists():
+            raise serializers.ValidationError('A wallet with this phone number already exists for this customer.')
+        return format_phone_number(phone_number)
+        
+
+    def save(self, **kwargs):
+        customer_id = self.context['customer_id']
+        self.instance =  MobilePaymentWallet.objects.create(customer_id=customer_id, **self.validated_data)
+        otp = randint(100000, 999999)
+        send_otp_sms('+233553212010', otp)
+        otp_manager.store_otp(self.instance.phone_number, otp)
+        return self.instance
+
+
+class VerifyPhoneNumberSerializer(serializers.Serializer):
+    otp = serializers.CharField()
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    
+    class Meta:
+        model = Address
+        fields = ['id', 'city', 'street', 'gps', 'apartment', 'landmark']
+        
+    def save(self, **kwargs):
+        customer_id = self.context['customer_id']
+        self.instance = Address.objects.create(customer_id=customer_id, **self.validated_data)
+        return self.instance
+    
+    
+
+
+class FavoriteProductSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    product = SimpleProductSerializer(read_only=True)
+    product_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = FavoriteProduct
+        fields = ['id', 'product', 'created_at', 'product_id']
+
+    def save(self, **kwargs):
+        customer_id = self.context['customer_id']
+        #create if not exist
+        favorite_product, created = FavoriteProduct.objects.get_or_create(
+            customer_id=customer_id,
+            product_id=self.validated_data['product_id']
+        )
+        self.instance = favorite_product
+        return self.instance

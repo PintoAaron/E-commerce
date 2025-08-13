@@ -1,3 +1,5 @@
+from random import randint
+
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -6,47 +8,48 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin
-from .models import Product, Collection, OrderItem, Cart, Review, CartItem, Customer, Order, ProductImage
-from .serializers import UpdateCollectionSerializer, ProductImageSerializer, UpdateOrderSerializer, ProductSerializer, CollectionSerializer, CartSerializer, ReviewSerializer, CartItemSerializer, CreateCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer, OrderSerializer, CreateOrderSerializer, CreateProductSerializer
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, ListModelMixin
+from .models import Product, Collection, OrderItem, Cart, Review, CartItem, Customer, Order, ProductImage, MobilePaymentWallet, Address, FavoriteProduct
+from .serializers import UpdateCollectionSerializer, ProductImageSerializer, UpdateOrderSerializer, ProductSerializer, CollectionSerializer, CartSerializer, ReviewSerializer, CartItemSerializer, CreateCartItemSerializer, UpdateCartItemSerializer, CustomerSerializer, OrderSerializer, CreateOrderSerializer, CreateProductSerializer, MobilePaymentWalletSerializer, AddressSerializer, VerifyPhoneNumberSerializer, FavoriteProductSerializer, UpdateProductSerializer
 from .filters import ProductFilter
 from .pagination import DefaultPagination
 from .permissions import IsAdminOrReadOnly, CanViewCustomerHistory
+from .utils.sms import send_otp_sms
+from .utils.redis import otp_manager
 
 
 class ProductViewSet(ModelViewSet):
-    # serializer_class = ProductSerializer
-    queryset = Product.objects.prefetch_related('images').all()
+    # queryset = Product.objects.prefetch_related('images').all()
+    queryset = Product.objects.filter(is_active=True).prefetch_related('images').all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     search_fields = ['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
     pagination_class = DefaultPagination
     permission_classes = [IsAdminOrReadOnly]
-    
-    
-    
+
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CreateProductSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateProductSerializer
         return ProductSerializer
 
     def destroy(self, request, *args, **kwargs):
         if OrderItem.objects.filter(product_id=kwargs['pk']).exists():
             return Response({'error': 'Product cannot be deleted because it is associated with an order item'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().destroy(request, *args, **kwargs)
-    
-    
+
     def get_serializer_context(self):
         return {'user_id': self.request.user.id}
-    
-    
+
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def me(self, request):
         products = self.queryset.filter(user_id=request.user.id)
         serializer = self.get_serializer(products, many=True)
         return Response(serializer.data)
-       
+
+
 class CollectionViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
     serializer_class = CollectionSerializer
@@ -92,6 +95,59 @@ class CartItemViewSet(ModelViewSet):
         return {'cart_id': self.kwargs['cart_pk']}
 
 
+class MobilePaymentWalletViewSet(CreateModelMixin, ListModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH':
+            return VerifyPhoneNumberSerializer
+        return MobilePaymentWalletSerializer
+
+    def get_queryset(self):
+        return MobilePaymentWallet.objects.filter(customer_id=self.kwargs['customer_pk'])
+    
+    
+    def get_serializer_context(self):
+        return {'customer_id': self.kwargs['customer_pk']}
+    
+
+    @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
+    def send_otp(self, request, pk=None, customer_pk=None):
+        wallet = MobilePaymentWallet.objects.get(pk=pk, customer_id=customer_pk)
+        otp = randint(100000, 999999)
+        # send_otp_sms(wallet.phone_number, otp)
+        # otp_manager.store_otp(wallet.phone_number, otp)
+
+        otp_status = send_otp_sms('+233553212010',otp)
+        if otp_status != 'sent':
+            return Response({'detailed': otp_status}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        otp_manager.store_otp(wallet.phone_number, otp)
+        return Response({'detailed': 'sent'},status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['PATCH'], permission_classes=[IsAuthenticated])
+    def verify(self, request, pk=None, customer_pk=None):
+        wallet = MobilePaymentWallet.objects.get(pk=pk, customer_id=customer_pk)
+        otp = request.data.get('otp')
+        if otp_manager.get_otp(wallet.phone_number) == otp:
+            wallet.verified = True
+            wallet.save()
+            otp_manager.delete_otp(wallet.phone_number)
+            return Response({'detailed': 'verified'}, status=status.HTTP_200_OK)
+        return Response({'detailed': 'verification failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddressViewSet(ModelViewSet):
+    serializer_class = AddressSerializer
+
+    def get_queryset(self):
+        return Address.objects.filter(customer_id=self.kwargs['customer_pk'])
+    
+    
+    def get_serializer_context(self):
+        return {'customer_id': self.kwargs['customer_pk']}
+
+
+
 class CustomerViewSet(ModelViewSet):
     serializer_class = CustomerSerializer
     queryset = Customer.objects.all()
@@ -112,17 +168,15 @@ class CustomerViewSet(ModelViewSet):
     @action(detail=True, methods=['GET', 'DELETE'], permission_classes=[CanViewCustomerHistory])
     def history(self, request, pk):
         return Response(pk)
-    
-    
+
     @action(detail=True, methods=['GET'], permission_classes=[IsAuthenticated])
     def cart(self, request, pk):
         # check if user has a cart and return else create one and return
         customer = Customer.objects.get(user_id=request.user.id)
         cart, created = Cart.objects.get_or_create(customer_id=customer.id)
-        if created:
-            print(f"CART CREATED- {cart.id}")
         serializer = CartSerializer(cart)
         return Response(serializer.data)
+
 
 class OrderViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
@@ -156,10 +210,22 @@ class OrderViewSet(ModelViewSet):
 
 class ProductImageViewSet(ModelViewSet):
     serializer_class = ProductImageSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         return {'product_id': self.kwargs['product_pk']}
 
     def get_queryset(self):
         return ProductImage.objects.filter(product_id=self.kwargs['product_pk'])
+
+
+
+class FavoriteProductViewSet(CreateModelMixin, ListModelMixin, DestroyModelMixin, RetrieveModelMixin, GenericViewSet):
+    serializer_class = FavoriteProductSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return FavoriteProduct.objects.filter(customer_id=self.kwargs['customer_pk'])
+
+    def get_serializer_context(self):
+        return {'customer_id': self.kwargs['customer_pk']}
