@@ -27,6 +27,13 @@ class ProductViewSet(ModelViewSet):
     ordering_fields = ['unit_price', 'last_update']
     pagination_class = DefaultPagination
     permission_classes = [IsAdminOrReadOnly]
+    
+    
+    def get_queryset(self):
+        if self.action == 'list':
+            print("WE ARE LISTING")
+            return Product.objects.filter(is_active=True).prefetch_related('images')
+        return Product.objects.all().prefetch_related('images')
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -45,7 +52,7 @@ class ProductViewSet(ModelViewSet):
 
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def me(self, request):
-        products = self.queryset.filter(user_id=request.user.id)
+        products = Product.objects.filter(user_id=request.user.id).prefetch_related('images')
         serializer = self.get_serializer(products, many=True)
         return Response(serializer.data)
 
