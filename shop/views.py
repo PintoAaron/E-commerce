@@ -20,7 +20,7 @@ from .utils.redis import otp_manager
 
 class ProductViewSet(ModelViewSet):
     # queryset = Product.objects.prefetch_related('images').all()
-    queryset = Product.objects.filter(is_active=True).prefetch_related('images').all()
+    # queryset = Product.objects.filter(is_active=True).prefetch_related('images').all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     search_fields = ['title', 'description']
@@ -31,7 +31,6 @@ class ProductViewSet(ModelViewSet):
     
     def get_queryset(self):
         if self.action == 'list':
-            print("WE ARE LISTING")
             return Product.objects.filter(is_active=True).prefetch_related('images')
         return Product.objects.all().prefetch_related('images')
 
@@ -201,7 +200,7 @@ class OrderViewSet(ModelViewSet):
         return OrderSerializer
 
     def get_queryset(self):
-        if self.request.user.is_staff:
+        if self.request.user.is_superuser:
             return Order.objects.all()
         customer = Customer.objects.get(user_id=self.request.user.id)
         return Order.objects.filter(customer_id=customer.id)

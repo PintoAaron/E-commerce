@@ -120,18 +120,40 @@ class Address(models.Model):
 
 
 class Order(models.Model):
-    ORDER_PENDING = 'P'
-    ORDER_FAILED = 'F'
-    ORDER_COMPLETED = 'C'
+    PAYMENT_PENDING = 'P'
+    PAYMENT_FAILED = 'F'
+    PAYMENT_COMPLETED = 'C'
 
-    ORDER = [
+
+    ORDER_PENDING = 'P'
+    ORDER_SHIPPED = 'S'
+    ORDER_OUT_FOR_DELIVERY = 'O'
+    ORDER_DELIVERED = 'D'
+    ORDER_COMPLETED = 'C'
+    ORDER_FAILED = 'F'
+    
+    
+    ORDER_STATUS = [
         (ORDER_PENDING, 'Pending'),
-        (ORDER_FAILED, 'Failed'),
+        (ORDER_SHIPPED, 'Shipped'),
+        (ORDER_OUT_FOR_DELIVERY, 'Out for Delivery'),
+        (ORDER_DELIVERED, 'Delivered'),
         (ORDER_COMPLETED, 'Completed'),
+        (ORDER_FAILED, 'Failed'),
+    ]
+
+
+    PAYMENT_STATUS = [
+        (PAYMENT_PENDING, 'Pending'),
+        (PAYMENT_FAILED, 'Failed'),
+        (PAYMENT_COMPLETED, 'Completed'),
     ]
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='orders')
+    shipping_address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name='orders')
+    payment_wallet = models.ForeignKey(MobilePaymentWallet, on_delete=models.PROTECT, related_name='orders', null=True, blank=True)
+    payment_status = models.CharField(max_length=1, choices=PAYMENT_STATUS, default=PAYMENT_PENDING)
+    status = models.CharField(max_length=1, choices=ORDER_STATUS, default=ORDER_PENDING)
     placed_at = models.DateTimeField(auto_now_add=True)
-    payment_status = models.CharField(max_length=1, choices=ORDER, default=ORDER_PENDING)
 
     class Meta:
         ordering = ['-placed_at']
