@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]  # Allow all hosts for development purposes
 #ALLOWED_HOSTS = []
@@ -105,16 +105,16 @@ WSGI_APPLICATION = 'Ecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pintoshop',
-        'HOST': 'localhost',
-        'USER': 'developer',
-        'PASSWORD': 'password',
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'pintoshop',
+#         'HOST': 'localhost',
+#         'USER': 'developer',
+#         'PASSWORD': 'password',
+#         'PORT': '5432',
+#     }
+# }
 
 # DATABASES = {
 #     'default': {
@@ -128,9 +128,9 @@ DATABASES = {
 # }
 
 
-# DATABASES = {
-#     'default': dj_database_url.config()
-# }
+DATABASES = {
+    'default': dj_database_url.config()
+}
 
 
 # Password validation
@@ -218,7 +218,6 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
 
-#CELERY_BROKER_URL = 'redis://192.168.124.193:6379/1'
 CELERY_BROKER_URL = os.getenv('BROKER_URL')
 CELERY_BEAT_SCHEDULE = {
     'mail_clients_every_friday':{
