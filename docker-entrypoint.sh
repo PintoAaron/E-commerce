@@ -1,9 +1,8 @@
 #!/bin/bash
-
-# Apply database migrations
-echo "Apply database migrations"
 python manage.py migrate
 
-# Start server
-echo "Starting server"
+python manage.py add_collections
+
+python manage.py collectstatic --noinput
+
 python manage.py runserver 0.0.0.0:8000
